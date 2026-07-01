@@ -1,0 +1,700 @@
+R1-Core
+-----------------------------------
+enable
+config ter
+hostname R1-Core
+no ip domain-lookup
+line console 0
+password cisco
+login
+exit
+ipv6 unicast-routing
+ipv6 dhcp pool Estudiantes
+address prefix 2001:25:22:0000::/64
+dns-server 2001:25:22:0000::2
+domain-name itla.edu.do
+exit
+interface e0/0
+no shut
+exit
+interface e0/0.10
+encapsulation dot 10
+ip address 172.22.0.2 255.255.248.0
+ipv6 address 2001:25:22:0000::2/64
+ipv6 dhcp server Estudiantes
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool Docentes
+address prefix 2001:25:22:0001::/64
+dns-server 2001:25:22:0001::2
+domain-name itla.edu.do
+exit
+interface e0/0.20
+encapsulation dot 20
+ip address 172.22.8.2 255.255.255.0
+ipv6 address 2001:25:22:0001::2/64
+ipv6 dhcp server Docentes
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool Gestion
+address prefix 2001:25:22:0005::/64
+dns-server 2001:25:22:0005::2
+domain-name itla.edu.do
+exit
+interface e0/0.99
+encapsulation dot 99
+ip address 172.22.10.66 255.255.255.224
+ipv6 address 2001:25:22:0005::2/64
+ipv6 dhcp server Gestion
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool Voz
+address prefix 2001:25:22:0006::/64
+dns-server 2001:25:22:0006::2
+domain-name itla.edu.do
+exit
+interface e0/0.60
+encapsulation dot 60
+ip address 172.22.10.98 255.255.255.224
+ipv6 address 2001:25:22:0006::2/64
+ipv6 dhcp server Voz
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool BlackhullR1
+address prefix 2001:25:22:0666::/64
+dns-server 2001:25:22:0666::2
+domain-name itla.edu.do
+exit
+interface e0/0.666
+encapsulation dot 666
+ip address 172.22.10.129 255.255.255.240
+ipv6 address 2001:25:22:0666::2/64
+ipv6 dhcp server BlackhullR1
+ipv6 nd managed-config-flag
+no shutdown
+exit
+
+interface s2/0
+ip address 172.22.10.161 255.255.255.252
+ipv6 address 2001:25:22:A001::1/64
+no shutdown
+exit
+
+ip route 0.0.0.0 0.0.0.0 e0/2
+
+do wr
+end
+
+
+------------------------
+VTP - Server - SWM1
+------------------------
+
+enable
+configure terminal
+spanning-tree mode rapid-pvst 
+hostname SWM1
+banner motd #Acceso Restringido#
+no ip domain-lookup
+line vty 0 4
+password cisco
+login
+exit
+line console 0
+password cisco
+login
+exit
+ip routing
+vlan 10
+name Estudiantes
+exit
+vlan 20
+name Docentes
+exit
+vlan 99
+name Gestion
+exit
+vlan 60
+name Voz
+exit
+vlan 666
+name BlackhullR1
+exit
+vtp mode server
+vtp domain ITLA
+vtp password sigei
+vtp version 2
+
+interface range e0/1-3
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+channel-protocol lacp
+channel-group 1 mode active
+exit
+interface port 1
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 1,20,99,60,666
+exit
+
+interface e1/0
+no shutdown
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+interface e1/1
+no shutdown
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+interface e1/2
+spanning-tree link-type point-to-point
+no shutdown
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+interface e0/0
+no shutdown
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+do wr
+end
+
+
+-------------------------
+SWM2
+-------------------------
+
+enable
+config t
+hostname SWM2
+line console 0
+password cisco
+login
+exit
+line vty 0 4
+password cisco
+login
+exit
+
+spanning-tree mode rapid-pvst 
+vtp version 2
+vtp mode client
+vtp domain ITLA
+vtp password sigei
+
+interface range e0/1-3
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+channel-protocol lacp
+channel-group 1 mode active
+exit
+interface port 1
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 1,20,99,60,666
+exit
+
+interface e1/0
+spanning-tree link-type point-to-point
+no shutdown
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+interface e1/1
+spanning-tree link-type point-to-point
+no shutdown
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+interface e1/2
+spanning-tree link-type point-to-point
+no shutdown
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+interface e0/0
+no shutdown
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+--------------------------
+SWAC1
+--------------------------
+
+enable
+config ter
+hostname SWAC1
+spanning-tree mode rapid-pvst 
+line vty 0 4
+password cisco
+login
+exit
+line console 0
+password cisco
+login
+exit
+vtp version 2
+vtp mode client
+vtp domain ITLA
+vtp password sigei
+
+int e0/0
+no shut
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+int e0/1
+no shut
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+int e1/0
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport mode access
+switchport access vlan 20
+exit
+do wr
+end
+
+--------------------------
+SWAC2
+--------------------------
+
+enable
+config ter
+hostname SWAC2
+spanning-tree mode rapid-pvst 
+line vty 0 4
+password cisco
+login
+exit
+line console 0
+password cisco
+login
+exit
+vtp version 2
+vtp mode client
+vtp domain ITLA
+vtp password sigei
+
+int e0/0
+no shut
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+int e0/1
+no shut
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+int e1/0
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport mode access
+switchport access vlan 10
+exit
+do write
+end
+
+--------------------------
+SWAC3
+--------------------------
+
+enable
+config ter
+hostname SWAC3
+spanning-tree mode rapid-pvst 
+line vty 0 4
+password cisco
+login
+exit
+line console 0
+password cisco
+login
+exit
+vtp version 2
+vtp mode client
+vtp domain ITLA
+vtp password sigei
+
+int e0/0
+no shut
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+int e0/1
+no shut
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 60,1,666,99,20,10
+exit
+
+int e1/0
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport mode access
+switchport access vlan 99
+exit
+
+do wr
+end
+
+
+
+
+R2
+-------------------------------------
+enable 
+configure terminal
+hostname R2
+no ip domain-lookup
+line console 0
+password cisco
+login
+exit
+ipv6 unicast-routing
+ipv6 dhcp pool Academicos
+address prefix 2001:25:22:0002::/64
+dns-server 2001:25:22:0002::2 
+domain-name itla.edu.do
+exit
+int e0/0
+no shut
+exit
+int e0/0.30
+encapsulation dot 30
+ip address 172.22.9.2 255.255.255.128
+ipv6 address 2001:25:22:0002::2/64
+ipv6 dhcp server Academicos
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool Finanzas
+address prefix 2001:25:22:0003::/64
+dns-server 2001:25:22:0003::2 
+domain-name itla.edu.do
+exit
+int e0/0.40
+encapsulation dot 40
+ip address 172.22.9.130 255.255.255.128
+ipv6 address 2001:25:22:0003::2/64
+ipv6 dhcp server Finanzas
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool Datacenter
+address prefix 2001:25:22:0004::/64
+dns-server 2001:25:22:0004::1 
+domain-name itla.edu.do
+exit
+int e0/1
+ip address 172.22.10.1 255.255.255.192
+ipv6 address 2001:25:22:0004::1/64
+ipv6 dhcp server Datacenter
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool Gestion-Sucursal
+address prefix 2001:25:22:0005::/64
+dns-server 2001:25:22:0005::3 
+domain-name itla.edu.do
+exit
+int e0/0.99
+encapsulation dot 99
+ip address 172.22.10.67 255.255.255.224
+ipv6 address 2001:25:22:0005::3/64
+ipv6 dhcp server Gestion-Sucursal
+ipv6 nd managed-config-flag
+no shutdown
+exit
+ipv6 dhcp pool BlackhullR2
+address prefix 2001:25:22:0777::/64
+dns-server 2001:25:22:0777::2 
+domain-name itla.edu.do
+exit
+int e0/0.777
+encapsulation dot 777
+ip address 172.22.10.145 255.255.255.240
+ipv6 address 2001:25:22:0777::2/64
+ipv6 dhcp server BlackhullR2
+ipv6 nd managed-config-flag
+no shutdown
+exit
+interface s2/0
+ip address 172.22.10.162 255.255.255.252
+ipv6 address 2001:25:22:A001::2/64
+no shutdown
+exit
+do wr
+end
+
+---------------------
+SWA13
+--------------------
+
+enable
+config terminal
+hostname SWA13
+line vty 0 4
+password cisco
+login
+exit
+line console 0
+password cisco
+login
+exit
+ip routing
+no ip domain-lookup
+spanning-tree mode rapid-pvst 
+vtp version 2
+vtp mode transparent
+vtp domain SIGEI
+vtp password itla
+
+vlan 30
+name Academicos
+exit
+vlan 40
+name Finanzas
+exit
+vlan 50
+name Datacenter
+exit
+vlan 99
+name Gestion-Sucursal
+exit
+vlan 777
+name BlackhullR2
+exit
+
+int e0/0
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 1,30,40,50,99,777
+exit
+
+int e1/0
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport mode access
+switchport access vlan 30
+exit
+int e1/1
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport mode access
+switchport access vlan 40
+exit
+
+do wr
+end
+
+
+---------------------
+SW
+--------------------
+
+enable
+config terminal
+hostname SW
+line vty 0 4
+password cisco
+login
+exit
+line console 0
+password cisco
+login
+exit
+ip routing
+no ip domain-lookup
+spanning-tree mode rapid-pvst 
+vtp version 2
+vtp mode transparent
+vtp domain SIGEI
+vtp password itla
+
+vlan 30
+name Academicos
+exit
+vlan 40
+name Finanzas
+exit
+vlan 50
+name Datacenter
+exit
+vlan 99
+name Gestion-Sucursal
+exit
+vlan 777
+name BlackhullR2
+exit
+
+int e0/0
+spanning-tree link-type point-to-point
+switchport trunk encapsulation dot
+switchport mode trunk
+switchport trunk native vlan 1
+switchport trunk allow vlan 1,30,40,50,99,777
+exit
+
+int e1/0
+spanning-tree portfast
+spanning-tree bpduguard enable
+switchport mode access
+switchport access vlan 50
+exit
+
+do wr
+end
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+HSRP
+
+R1
+
+interface e0/0.10
+ standby 10 ip 172.22.0.1
+ standby 10 priority 110
+ standby 10 preempt
+exit
+
+interface e0/0.20
+ standby 20 ip 172.22.8.1
+ standby 20 priority 110
+ standby 20 preempt
+exit
+
+
+interface e0/0.99
+ standby 99 ip 172.22.10.65
+ standby 99 priority 110
+ standby 99 preempt
+exit
+do write
+
+R2
+
+interface e0/0.99
+ standby 99 ip 172.22.10.65
+ standby 99 priority 100
+exit
+do write
+
+Ips para las PC EST y DOC para las pruebas de fainlover:
+
+PC Estudiante:
+ip 172.22.0.10 255.255.248.0 172.22.0.1
+save
+
+PC Docente:
+ip 172.22.8.10 255.255.255.0 172.22.8.1
+save
+
+PC Gestion:
+ip 172.22.10.70 255.255.248.0 172.22.10.65
+save
+
+PC-AC
+ip 172.22.50.10 255.255.255.0 172.22.50.1
+save
+
+PC-Fin
+ip 172.22.50.11 255.255.255.0 172.22.50.1
+save
+
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+R1-CORE 
+
+router ospf 1
+ router-id 1.1.1.1
+
+ network 172.22.0.0 0.0.7.255 area 0
+ network 172.22.8.0 0.0.0.255 area 0
+ network 172.22.10.64 0.0.0.31 area 0
+ network 172.22.10.96 0.0.0.31 area 0
+ network 172.22.10.128 0.0.0.15 area 0
+ network 172.22.10.160 0.0.0.3 area 0
+
+ default-information originate
+
+exit
+
+R2
+
+router ospf 1
+ router-id 2.2.2.2
+
+ network 172.22.9.0 0.0.0.127 area 0
+ network 172.22.9.128 0.0.0.127 area 0
+ network 172.22.10.0 0.0.0.63 area 0
+ network 172.22.10.64 0.0.0.31 area 0
+ network 172.22.10.144 0.0.0.15 area 0
+ network 172.22.10.160 0.0.0.3 area 0
+
+exit
+
+
+
+
