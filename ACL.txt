@@ -1,0 +1,49 @@
+--------------------------
+ACL IPv4 - Router Sucursal R2
+--------------------------
+
+enable
+configure terminal
+
+access-list 10 deny 172.22.0.0 0.0.7.255
+access-list 10 permit any
+
+interface e0/1
+ip access-group 10 out
+exit
+
+ip access-list extended BLOQUEO_FINANZAS_ACADEMICOS
+deny icmp 172.22.9.128 0.0.0.127 172.22.9.0 0.0.0.127
+permit ip any any
+exit
+
+interface e0/0.40
+ip access-group BLOQUEO_FINANZAS_ACADEMICOS in
+exit
+
+wr
+
+
+--------------------------
+Comandos de verificación ACL
+--------------------------
+
+show access-lists
+show running-config | section access-list
+show running-config interface e0/1
+show running-config interface e0/0.40
+show ip interface e0/1
+show ip interface e0/0.40
+
+
+--------------------------
+Pruebas desde PC-FIN
+--------------------------
+
+ip 172.22.9.140 255.255.255.128 172.22.9.130
+save
+
+show
+ping 172.22.9.130
+ping 172.22.9.10
+ping 172.22.10.1
